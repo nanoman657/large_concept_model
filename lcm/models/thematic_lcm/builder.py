@@ -54,7 +54,9 @@ class ThematicLCModelConfig(AbstractLCModelConfig):
     encoder: TransformerConfig = field(default_factory=lambda: TransformerConfig())
     """Transformer encoder for paragraph-level processing."""
 
-    theme_projection: ProjectionConfig = field(default_factory=lambda: ProjectionConfig())
+    theme_projection: ProjectionConfig = field(
+        default_factory=lambda: ProjectionConfig()
+    )
     """Theme projection config mapping to theme space."""
 
 
@@ -78,7 +80,7 @@ class ThematicLCModel(AbstractLCModel):
         """
         Thematic LCM model with:
             - frontend: maps sentence embeddings to model_dim
-            - encoder: transformer encoder for paragraph processing  
+            - encoder: transformer encoder for paragraph processing
             - theme_projection: maps to theme embedding space
             - theme_classifier: optional classification head
         """
@@ -101,10 +103,10 @@ class ThematicLCModel(AbstractLCModel):
     ) -> EmbeddingsBatch:
         """
         Forward pass for thematic modeling.
-        
+
         Args:
             batch: Input batch containing sentence embeddings for paragraphs
-            
+
         Returns:
             EmbeddingsBatch containing theme representations
         """
@@ -129,7 +131,9 @@ class ThematicLCModel(AbstractLCModel):
             # Create mask for valid positions
             mask = ~encoded_padding_mask
             # Mean pooling with masking
-            paragraph_repr = (encoded_seqs * mask.unsqueeze(-1)).sum(dim=1) / mask.sum(dim=1, keepdim=True)
+            paragraph_repr = (encoded_seqs * mask.unsqueeze(-1)).sum(dim=1) / mask.sum(
+                dim=1, keepdim=True
+            )
         else:
             # Simple mean pooling
             paragraph_repr = encoded_seqs.mean(dim=1)
@@ -150,11 +154,11 @@ class ThematicLCModel(AbstractLCModel):
     ) -> torch.Tensor:
         """
         Predict themes for paragraphs.
-        
+
         Args:
             batch: Input batch containing sentence embeddings
             return_probabilities: If True and classifier exists, return class probabilities
-            
+
         Returns:
             Theme predictions (embeddings or class indices/probabilities)
         """

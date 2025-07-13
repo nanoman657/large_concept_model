@@ -4,9 +4,9 @@
 #
 
 from lcm.models.thematic_lcm.builder import (
-    ThematicLCModelConfig,
     LCMFrontendConfig,
     ProjectionConfig,
+    ThematicLCModelConfig,
     TransformerConfig,
     thematic_lcm_arch,
 )
@@ -145,10 +145,10 @@ def thematic_lcm_classifier() -> ThematicLCModelConfig:
 @thematic_lcm_arch("thematic_lcm_mdd_classifier")
 def thematic_lcm_mdd_classifier() -> ThematicLCModelConfig:
     """Thematic LCM model for DSM-5 Major Depressive Disorder classification
-    
+
     Classifies text based on the 9 DSM-5 MDD diagnostic criteria:
     1. Depressed mood most of the day, nearly every day
-    2. Markedly diminished interest or pleasure in activities (anhedonia)  
+    2. Markedly diminished interest or pleasure in activities (anhedonia)
     3. Significant weight loss/gain or decrease/increase in appetite
     4. Insomnia or hypersomnia nearly every day
     5. Psychomotor agitation or retardation

@@ -11,6 +11,6 @@ from lcm.models.thematic_lcm.builder import (
 
 __all__ = [
     "ThematicLCModel",
-    "ThematicLCModelConfig", 
+    "ThematicLCModelConfig",
     "create_thematic_lcm_model",
 ]
