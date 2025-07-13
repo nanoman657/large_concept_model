@@ -1,0 +1,75 @@
+# @package trainer
+
+_trainer_: lcm.train.lcm.trainer.prepare_lcm_trainer
+
+output_dir: ??
+
+# Thematic LCM model configuration
+model_arch: thematic_lcm_base
+
+criterion:
+  name: theme_mse  # Custom criterion for theme prediction (would need implementation)
+  reduction: sum
+  compute_rmse: False
+
+dtype: "torch.float16"
+use_optimizer_in_fp32: true
+use_fsdp: true
+fsdp_fp32_reduce: true
+
+# Learning configuration optimized for thematic understanding
+lr: 0.0003
+lr_schedule: cosine
+num_lr_warmup_steps: 5_000
+max_steps: 100_000  # Fewer steps since theme learning may converge faster
+gradient_accumulation: 1
+max_grad_norm: 20
+weight_decay: 0.1
+adam_betas:
+  - 0.9
+  - 0.95
+adam_eps: 1e-5
+
+validate_every_n_steps: 5_000
+save_model_every_n_steps: 2_000
+checkpoint_every_n_steps: 2_000
+keep_last_n_checkpoints: 3
+preserve_consolidated_models: True
+publish_metrics_every_n_steps: 100
+
+seed: 42
+profile: false
+
+# Data loading configuration for paragraph-level processing
+data_loading_config:
+  max_tokens: 4096  # Smaller due to paragraph-level processing
+  min_batch_size: 1
+  len_to_wrap_long_seq: 64  # Shorter sequences for paragraphs
+  packing: false
+  min_length_of_sequences: 3  # Minimum 3 sentences per paragraph
+  min_length_after_batching: 5
+  num_parallel_calls: 1
+  nb_prefetch: 3
+
+# Thematic model specific settings
+model_config_or_name: thematic_lcm_base
+
+# Data requirements
+requirements:
+  nodes: 2
+  tasks_per_node: 4
+  gpus_per_node: 4
+  cpus_per_task: 16
+  mem_gb: 0
+  timeout_min: 5000
+
+# Experimental settings for theme learning
+experiment_name: thematic_lcm_pretraining
+wandb_project: thematic_lcm
+wandb_run_name: thematic_base_v1
+
+# Additional thematic-specific configs
+theme_learning:
+  focus_on_semantics: true
+  paragraph_aggregation: mean_pooling
+  theme_regularization: 0.01
