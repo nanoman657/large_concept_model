@@ -1,0 +1,106 @@
+name: Test Thematic Model
+
+on:
+  workflow_dispatch:
+    inputs:
+      paragraph:
+        description: 'Paragraph text to analyze for theme prediction'
+        required: true
+        type: string
+        default: 'This is a sample paragraph about artificial intelligence research. Scientists have been developing new machine learning models that can understand complex patterns in data. The latest breakthrough involves large language models that can process and generate human-like text with remarkable accuracy.'
+      model_size:
+        description: 'Model size to use for prediction'
+        required: false
+        type: choice
+        options:
+        - small
+        - medium
+        - large
+        default: 'medium'
+
+jobs:
+  test_theme_prediction:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python environment
+        uses: ./.github/actions/setup
+        
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          # Install basic dependencies for the test script
+          python -m pip install torch numpy
+          
+      - name: Test paragraph theme prediction
+        shell: bash
+        run: |
+          echo "🚀 Starting Thematic LCM Model Test"
+          echo "=================================="
+          echo ""
+          echo "📝 Input paragraph:"
+          echo "${{ github.event.inputs.paragraph }}"
+          echo ""
+          echo "🤖 Model size: ${{ github.event.inputs.model_size }}"
+          echo ""
+          echo "🔍 Running theme analysis..."
+          echo ""
+          
+          # Run the theme prediction script
+          python test_paragraph_theme.py "${{ github.event.inputs.paragraph }}" --model-size "${{ github.event.inputs.model_size }}"
+          
+      - name: Test with multiple model sizes (comparison)
+        shell: bash
+        run: |
+          echo ""
+          echo "🔄 Running comparison across all model sizes..."
+          echo "=============================================="
+          
+          for size in small medium large; do
+            echo ""
+            echo "📊 Testing with $size model:"
+            echo "------------------------"
+            python test_paragraph_theme.py "${{ github.event.inputs.paragraph }}" --model-size "$size" --json | jq -r '"Model: \(.model_size) (\(.model_parameters) params) | Theme: \(.predicted_theme) | Strength: \(.theme_strength)"'
+          done
+          
+      - name: Generate detailed analysis
+        shell: bash
+        run: |
+          echo ""
+          echo "📋 Detailed JSON Analysis (Medium Model):"
+          echo "========================================"
+          python test_paragraph_theme.py "${{ github.event.inputs.paragraph }}" --model-size medium --json | jq '.'
+          
+      - name: Test with example paragraphs
+        shell: bash
+        run: |
+          echo ""
+          echo "🧪 Testing with different theme examples:"
+          echo "========================================"
+          
+          # Scientific paragraph
+          echo ""
+          echo "🔬 Scientific Example:"
+          echo "-------------------"
+          scientific="The recent study published in Nature demonstrates a significant breakthrough in quantum computing. Researchers have successfully implemented a new error correction algorithm that reduces quantum decoherence by 95%. This advancement brings us closer to practical quantum computers that could revolutionize cryptography and drug discovery."
+          python test_paragraph_theme.py "$scientific" --model-size medium --json | jq -r '"Theme: \(.predicted_theme) | Strength: \(.theme_strength)"'
+          
+          # Sports paragraph  
+          echo ""
+          echo "⚽ Sports Example:"
+          echo "---------------"
+          sports="The championship game last night was absolutely thrilling. Our team scored three goals in the final quarter, with the winning goal coming in the last two minutes. The crowd went wild as the players celebrated their hard-fought victory. This season has been their best performance in over a decade."
+          python test_paragraph_theme.py "$sports" --model-size medium --json | jq -r '"Theme: \(.predicted_theme) | Strength: \(.theme_strength)"'
+          
+          # Personal paragraph
+          echo ""
+          echo "👤 Personal Example:"
+          echo "-----------------"
+          personal="I woke up this morning feeling incredibly grateful for my family. Yesterday was my daughter's birthday, and seeing her face light up when she opened her presents reminded me of what truly matters in life. These moments of pure joy and connection are what make all the challenges worthwhile."
+          python test_paragraph_theme.py "$personal" --model-size medium --json | jq -r '"Theme: \(.predicted_theme) | Strength: \(.theme_strength)"'
+          
+          echo ""
+          echo "✅ Thematic Model testing completed successfully!"
