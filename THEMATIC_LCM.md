@@ -34,6 +34,7 @@ The model consists of three main components:
 - `thematic_lcm_base`: Standard model (12 layers, 1024-dim model, 512-dim themes)
 - `thematic_lcm_large`: Large model (24 layers, 1536-dim model, 768-dim themes)
 - `thematic_lcm_classifier`: Base model with 50-class theme classifier
+- `thematic_lcm_mdd_classifier`: Specialized model for DSM-5 Major Depressive Disorder classification (9 diagnostic criteria)
 
 ## Usage
 
@@ -87,6 +88,39 @@ print(f"Predicted theme classes: {theme_classes}")  # [2] - class indices
 theme_probs = classifier_model.predict_themes(batch, return_probabilities=True)
 print(f"Theme probabilities shape: {theme_probs.shape}")  # [2, 50]
 ```
+
+### Specialized Clinical Classifier
+
+The Thematic LCM framework includes specialized models for clinical applications:
+
+```python
+# DSM-5 Major Depressive Disorder classifier
+config = ThematicLCModelConfig(model_arch="thematic_lcm_mdd_classifier")
+mdd_model = create_thematic_lcm_model(config)
+
+# Clinical text analysis
+clinical_text_embeddings = torch.randn(1, 8, 1024) * 0.006
+batch = EmbeddingsBatch(clinical_text_embeddings, padding_mask=None)
+
+# Classify according to 9 DSM-5 MDD criteria
+theme_embeddings = mdd_model.predict_themes(batch)  # [1, 512]
+
+# MDD criteria classification (if classifier head available)
+if hasattr(mdd_model, 'theme_classifier'):
+    logits = mdd_model.theme_classifier(theme_embeddings)
+    mdd_probabilities = torch.softmax(logits, dim=-1)  # [1, 9]
+    predicted_criterion = torch.argmax(mdd_probabilities, dim=-1)
+    
+    # Map to DSM-5 criteria
+    mdd_criteria = [
+        "Depressed Mood", "Anhedonia", "Appetite/Weight Changes",
+        "Sleep Disturbances", "Psychomotor Changes", "Fatigue",
+        "Worthlessness/Guilt", "Concentration Issues", "Death/Suicidal Thoughts"
+    ]
+    print(f"Predicted MDD criterion: {mdd_criteria[predicted_criterion.item()]}")
+```
+
+**Note**: Clinical models are intended for research purposes only. See [DSM5_MDD_CLASSIFIER.md](DSM5_MDD_CLASSIFIER.md) for detailed documentation and ethical considerations.
 
 ## Training
 
